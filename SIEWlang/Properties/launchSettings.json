@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "SIEWlang File": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\user\\Desktop\\Patio\\codigos\\SIEWlang\\SIEWlang\\testProgram.sw"
+    },
+    "SIEWland REPL": {
+      "commandName": "Project"
+    }
+  }
+}
