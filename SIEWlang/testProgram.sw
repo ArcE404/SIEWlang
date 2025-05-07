@@ -1,4 +1,3 @@
-﻿fn main()
-{
-	print "Do not expect this to work... ";
-}
+﻿// this is a comment
+(( )){} // grouping stuff
+!*+-/=<> <= == // operators

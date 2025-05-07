@@ -1,16 +1,18 @@
 ﻿using SIEWlang.Core.Lexer;
 using System.Text;
+using SystemEnv = System.Environment;
 
 namespace SIEWlang;
 
 class Siew
 {
+    private static bool HadError = false;
     public void Start(string[] args) 
     { 
         if(args.Length > 1)
         {
             Console.WriteLine("Usage: siew [script-file]");
-            return;
+            SystemEnv.Exit(65);
         }else if (args.Length == 1)
         {
             RunFile(args[0]);
@@ -24,8 +26,20 @@ class Siew
     // Read the bytes of a file given a file path and runs it
     private void RunFile(string filePath)
     {
-        byte[] bytes = File.ReadAllBytes(filePath);
-        Run(Encoding.UTF8.GetString(bytes));
+        // we use this method to read the files and not with bytes because in this way we will have not "" at the begininig or end of our source code
+        string text = "";
+
+        try
+        {
+            text = File.ReadAllText(filePath);
+        }
+        catch (Exception)
+        {
+            SystemEnv.Exit(65);
+        }
+
+        Run(text);
+        if (HadError) return;
     }
 
     // Read each line and run it if valid
@@ -41,6 +55,7 @@ class Siew
                 break;
             }
             Run(line);
+            HadError = false;
         }
     }
 
@@ -55,5 +70,18 @@ class Siew
         {
             // do something with the tokens 
         }
+    }
+
+    public static void Error(int line, string message)
+    {
+        Report(line, "", message);
+    }
+
+    public static void Report(int line, string where, string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"[line {line}] Error {where} : {message}");
+        HadError = true;
+        Console.ForegroundColor = ConsoleColor.White;
     }
 }
