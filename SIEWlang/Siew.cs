@@ -68,7 +68,7 @@ class Siew
         
         foreach(var token in tokens)
         {
-            // do something with the tokens 
+            Console.WriteLine(token.TokenType.ToString());
         }
     }
 

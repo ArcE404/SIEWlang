@@ -2,10 +2,10 @@
 
 public class Token
 {
-    private TokenType TokenType { set; get; }
-    private string Lexeme { set; get; }
-    private Object Literal { set; get; }
-    private int Line { set; get; }
+    public TokenType TokenType { private set; get; }
+    public string Lexeme { private set; get; }
+    public Object Literal { private set; get; }
+    public int Line { private set; get; }
 
     public Token(TokenType tokenType, string lexeme, Object literal, int line)
     {
