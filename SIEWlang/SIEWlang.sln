@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35818.85 d17.13
+VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIEWlang", "SIEWlang.csproj", "{3C4F61E2-BDD5-4407-8715-FF79D33CC4D0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateAst", "..\GenerateAst\GenerateAst.csproj", "{1252C2C7-A1D8-44ED-9418-44AE1A070D9C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +19,16 @@ Global
 		{3C4F61E2-BDD5-4407-8715-FF79D33CC4D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C4F61E2-BDD5-4407-8715-FF79D33CC4D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C4F61E2-BDD5-4407-8715-FF79D33CC4D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1252C2C7-A1D8-44ED-9418-44AE1A070D9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1252C2C7-A1D8-44ED-9418-44AE1A070D9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1252C2C7-A1D8-44ED-9418-44AE1A070D9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1252C2C7-A1D8-44ED-9418-44AE1A070D9C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1252C2C7-A1D8-44ED-9418-44AE1A070D9C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {382376DA-3765-4041-932B-723758BBD63D}

@@ -1,4 +1,7 @@
-﻿namespace SIEWlang;
+﻿using SIEWlang.Core.Lexer;
+using SIEWlang.Core.Parser;
+
+namespace SIEWlang;
 
 // ***************************************************
 // Sometimes It Even Works (SIEW) Programming Language
@@ -8,7 +11,6 @@ class Program
     static void Main(string[] args)
     {
         Siew siewProgram = new();
-
         siewProgram.Start(args);
     }
 }
