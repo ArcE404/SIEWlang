@@ -8,7 +8,6 @@ class Program
     static void Main(string[] args)
     {
         Siew siewProgram = new();
-
         siewProgram.Start(args);
     }
 }

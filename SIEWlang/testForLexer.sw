@@ -1,11 +1,11 @@
 ﻿// this is a comment
 (( )){} // grouping stuff
-rar someSome
+var someSome
 while
 for
 fn fn
 if(true) {
-	var some some = "some";
+	var someSome = "some";
 }
 "This is a string" // strings
 !*+-/=<> <= == // operators
