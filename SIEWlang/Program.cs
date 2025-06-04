@@ -1,7 +1,4 @@
-﻿using SIEWlang.Core.Lexer;
-using SIEWlang.Core.Parser;
-
-namespace SIEWlang;
+﻿namespace SIEWlang;
 
 // ***************************************************
 // Sometimes It Even Works (SIEW) Programming Language

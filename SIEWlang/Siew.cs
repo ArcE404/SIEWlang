@@ -1,4 +1,5 @@
 ﻿using SIEWlang.Core.Lexer;
+using SIEWlang.Core.Parser;
 using System.Text;
 using SystemEnv = System.Environment;
 
@@ -65,16 +66,30 @@ class Siew
         Lexer lexer = new(source);
 
         IEnumerable<Token> tokens = lexer.ScanTokens();
-        
-        foreach(var token in tokens)
-        {
-            Console.WriteLine(token.TokenType.ToString());
-        }
+
+        Parser parser = new([.. tokens]);
+        Expr expression = parser.Parse();
+
+        if(HadError) return;
+
+        Console.WriteLine(new AstPrinter().Print(expression));
     }
 
     public static void Error(int line, string message)
     {
         Report(line, "", message);
+    }
+
+    public static void Error(Token token, string message)
+    {
+        if (token.TokenType == TokenType.EOF)
+        {
+            Report(token.Line, " at end", message);
+        }
+        else
+        {
+            Report(token.Line, " at '" + token.Lexeme + "'", message);
+        }
     }
 
     public static void Report(int line, string where, string message)
