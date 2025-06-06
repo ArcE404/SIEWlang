@@ -1,8 +1,4 @@
-﻿using System;
-using System.Data;
-using System.Reflection.Metadata.Ecma335;
-using Microsoft.CSharp.RuntimeBinder;
-using SIEWlang.Core.Lexer;
+﻿using SIEWlang.Core.Lexer;
 using static SIEWlang.Core.Lexer.TokenType;
 namespace SIEWlang.Core.Parser;
 

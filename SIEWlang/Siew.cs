@@ -1,4 +1,5 @@
-﻿using SIEWlang.Core.Lexer;
+﻿using SIEWlang.Core.Interpreter;
+using SIEWlang.Core.Lexer;
 using SIEWlang.Core.Parser;
 using System.Text;
 using SystemEnv = System.Environment;
@@ -7,7 +8,11 @@ namespace SIEWlang;
 
 class Siew
 {
+    private static readonly Interpreter Interpreter = new Interpreter();
     private static bool HadError = false;
+    static bool HadRuntimeError = false;
+
+
     public void Start(string[] args) 
     { 
         if(args.Length > 1)
@@ -40,7 +45,10 @@ class Siew
         }
 
         Run(text);
-        if (HadError) return;
+
+        // indicate an error exit code if so
+        if (HadError) SystemEnv.Exit(65);
+        if (HadRuntimeError) SystemEnv.Exit(70);
     }
 
     // Read each line and run it if valid
@@ -72,7 +80,7 @@ class Siew
 
         if(HadError) return;
 
-        Console.WriteLine(new AstPrinter().Print(expression));
+        Interpreter.Interpret(expression);
     }
 
     public static void Error(int line, string message)
@@ -90,6 +98,14 @@ class Siew
         {
             Report(token.Line, " at '" + token.Lexeme + "'", message);
         }
+    }
+
+    public static void RuntimeError(RuntimeError error)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(error.Message +"\n[line " + error.Token.Line + "]");
+        HadRuntimeError = true;
+        Console.ForegroundColor = ConsoleColor.White;
     }
 
     public static void Report(int line, string where, string message)
