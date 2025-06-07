@@ -14,16 +14,49 @@ public class Parser
         Tokens = tokens;
     }
 
-    public Expr Parse()
+    // program → statement* EOF ;
+    public List<Stmt> Parse()
     {
         try
         {
-            return Expression();
+            List<Stmt> statements = new();
+            while (!IsAtEnd())
+            {
+                statements.Add(Statement());
+            }
+
+            return statements;
         }
-        catch (ParseError error)
+        catch (ParseError e)
         {
             return null;
         }
+    }
+
+    //statement → exprStmt | printStmt ;
+    private Stmt Statement()
+    {
+        if (Match(PRINT)) return PrintStatement();
+
+        return ExpressionStatement();
+    }
+
+    private Stmt PrintStatement() 
+    {
+        // we consume the print token when we do the match in the statement method.
+        Expr value = Expression();
+
+        Consume(SEMICOLON, "Expect ';' after value."); // we separates the expressions using semiclone, this is the reason of the semiclone.
+        return new Stmt.Print(value);
+    }
+
+    private Stmt ExpressionStatement()
+    {
+        Expr expr = Expression();
+
+        Consume(SEMICOLON, "Expect ';' after value.");
+
+        return new Stmt.Expression(expr);
     }
 
     // Expression -> Equality

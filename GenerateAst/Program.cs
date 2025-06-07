@@ -26,8 +26,13 @@ class Program
             "Grouping : Expr Expression",
             "Literal  : Object Value",
             "Unary    : Token Operator, Expr Right"
-        }
-        );
+        });
+
+        DefineAst(outputDir, "Stmt", new()
+        {
+            "Expression : Expr Expression",
+            "Print      : Expr Expression"
+        });
     }
 
     private static void DefineAst(string outputDir, string baseName, List<string> types) 
@@ -45,10 +50,10 @@ class Program
 
 
 
-        writer.WriteLine("abstract class " + baseName + "{");
+        writer.WriteLine("public abstract class " + baseName + "{");
         writer.WriteLine("    public abstract T Accept<T>(IVisitor<T> visitor);");
         writer.WriteLine();
-        DefineVisitor(writer, "Expr", types);
+        DefineVisitor(writer, baseName, types);
         writer.WriteLine();
 
         foreach(var type in types)

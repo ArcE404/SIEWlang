@@ -4,15 +4,19 @@ using static SIEWlang.Core.Lexer.TokenType;
 
 namespace SIEWlang.Core.Interpreter;
 
-public class Interpreter : Expr.IVisitor<object>
+public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
 {
 
-    public void Interpret(Expr expression)
+    // a list of statements is considered a Program.
+    // program → statement* EOF;
+    public void Interpret(List<Stmt> statements)
     {
         try
         {
-            object value = Evaluate(expression);
-            Console.WriteLine(value.ToString());
+            foreach (var stmt in statements)
+            {
+                Execute(stmt);
+            }
         }
         catch (RuntimeError error)
         {
@@ -151,5 +155,30 @@ public class Interpreter : Expr.IVisitor<object>
         if (left is double && right is double) return;
 
         throw new RuntimeError(operatr, "Operands must be numbers.");
+    }
+
+    private void Execute(Stmt stmt)
+    {
+        stmt.Accept(this);
+    }
+
+    public object VisitExpressionStmt(Stmt.Expression stmt)
+    {
+        Evaluate(stmt.expression);
+
+        // this function should be void, but since the interface is generic, we cannot use void as a parameter 
+        // to implement the interface. Therefore, we use object and return null and we treat this function as a void function.
+        return null;
+    }
+
+    public object VisitPrintStmt(Stmt.Print stmt)
+    {
+        object value = Evaluate(stmt.Expression);
+
+        Console.WriteLine(Stringify(value));
+
+        // this function should be void, but since the interface is generic, we cannot use void as a parameter 
+        // to implement the interface. Therefore, we use object and return null and we treat this function as a void function.
+        return null;
     }
 }
