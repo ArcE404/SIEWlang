@@ -11,6 +11,11 @@ internal class AstPrinter : IVisitor<string>
         return expr.Accept(this);
     }
 
+    public string VisitAssignExpr(Assign expr)
+    {
+        throw new NotImplementedException();
+    }
+
     public string VisitBinaryExpr(Binary expr)
     {
         return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right); // this seems to be the reason why in js we can do somthing like 1 + "1"...
@@ -31,6 +36,11 @@ internal class AstPrinter : IVisitor<string>
     public string VisitUnaryExpr(Unary expr)
     {
         return Parenthesize(expr.Operator.Lexeme, expr.Right);
+    }
+
+    public string VisitVariableExpr(Variable expr)
+    {
+        throw new NotImplementedException();
     }
 
     private string Parenthesize(string name, params Expr[] exprs)

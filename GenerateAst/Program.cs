@@ -22,16 +22,20 @@ class Program
 
         DefineAst(outputDir, "Expr", new()
         {
+            "Assign   : Token Name, Expr Value",
             "Binary   : Expr Left, Token Operator, Expr Right",
             "Grouping : Expr Expression",
             "Literal  : Object Value",
-            "Unary    : Token Operator, Expr Right"
+            "Unary    : Token Operator, Expr Right",
+            "Variable : Token Name"
         });
 
         DefineAst(outputDir, "Stmt", new()
         {
-            "Expression : Expr Expression",
-            "Print      : Expr Expression"
+            "Block : List<Stmt> Statements",
+            "Expression : Expr expression",
+            "Print      : Expr Expression",
+            "Var        : Token Name, Expr Initializer"
         });
     }
 

@@ -10,17 +10,34 @@ public abstract class Stmt{
 
     public interface IVisitor<R>
     {
+        R VisitBlockStmt(Block stmt);
         R VisitExpressionStmt(Expression stmt);
         R VisitPrintStmt(Print stmt);
+        R VisitVarStmt(Var stmt);
     }
+
+   public class Block : Stmt
+   {
+        public List<Stmt> Statements { get; }
+
+        public Block(List<Stmt> Statements)
+        {
+            this.Statements = Statements;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitBlockStmt(this);
+        }
+   }
 
    public class Expression : Stmt
    {
         public Expr expression { get; }
 
-        public Expression(Expr Expression)
+        public Expression(Expr expression)
         {
-            this.expression = Expression;
+            this.expression = expression;
         }
 
         public override T Accept<T>(IVisitor<T> visitor)
@@ -41,6 +58,23 @@ public abstract class Stmt{
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitPrintStmt(this);
+        }
+   }
+
+   public class Var : Stmt
+   {
+        public Token Name { get; }
+        public Expr Initializer { get; }
+
+        public Var(Token Name, Expr Initializer)
+        {
+            this.Name = Name;
+            this.Initializer = Initializer;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitVarStmt(this);
         }
    }
 
