@@ -1,24 +1,31 @@
-﻿using SIEWlang.Core.Lexer;
+﻿using System;
+using SIEWlang.Core.Lexer;
 using SIEWlang.Core.Parser;
 using static SIEWlang.Core.Lexer.TokenType;
 
 namespace SIEWlang.Core.Interpreter;
 
-public class Interpreter : Expr.IVisitor<object>
+public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
 {
+    private Environment _environment = new();
 
-    public void Interpret(Expr expression)
+    // A list of statements is considered a program.
+    // Grammar: program → statement* EOF;
+    public void Interpret(List<Stmt> statements)
     {
         try
         {
-            object value = Evaluate(expression);
-            Console.WriteLine(value.ToString());
+            foreach (var stmt in statements)
+            {
+                Execute(stmt);
+            }
         }
         catch (RuntimeError error)
         {
             Siew.RuntimeError(error);
         }
     }
+
     public object VisitBinaryExpr(Expr.Binary expr)
     {
         object left = Evaluate(expr.Left);
@@ -47,10 +54,10 @@ public class Interpreter : Expr.IVisitor<object>
                 {
                     if (left is double && right is double)
                     {
-                        return (double)left + (double) right;
+                        return (double)left + (double)right;
                     }
 
-                    if(left is string && right is string)
+                    if (left is string && right is string)
                     {
                         return (string)left + (string)right;
                     }
@@ -66,8 +73,7 @@ public class Interpreter : Expr.IVisitor<object>
                 return (double)left * (double)right;
         }
 
-
-        // unreachable
+        // Unreachable
         return null;
     }
 
@@ -80,23 +86,25 @@ public class Interpreter : Expr.IVisitor<object>
     {
         return expr.Value;
     }
-    // "...our interpreter is doing a post-order traversal—each node evaluates its children before doing its own work."
+
+    // "Our interpreter performs a post-order traversal—
+    // each node evaluates its children before performing its own computation."
     public object VisitUnaryExpr(Expr.Unary expr)
     {
         object rigth = Evaluate(expr.Right);
 
         switch (expr.Operator.TokenType)
         {
-            // this is the core of the statically languajes.
-            // The user dosent care the type, the interpreter will take care of it here at run time
+            // This is one of the key mechanisms of dynamically-typed languages.
+            // The user does not specify types explicitly— the interpreter handles type logic at runtime.
             case MINUS:
-                CheckNumberOperant(expr.Operator, rigth); 
+                CheckNumberOperant(expr.Operator, rigth);
                 return -(double)rigth;
             case BANG:
                 return !IsTruthy(rigth);
         }
 
-        // Unreacheble
+        // Unreachable
         return null;
     }
 
@@ -104,7 +112,8 @@ public class Interpreter : Expr.IVisitor<object>
     {
         if (value == null) return "nil";
 
-        if (value is double) {
+        if (value is double)
+        {
             string? text = value.ToString();
             if (text.EndsWith(".0"))
             {
@@ -122,7 +131,8 @@ public class Interpreter : Expr.IVisitor<object>
         return expr.Accept(this);
     }
 
-    // this is the same truthy as ruby's truthy
+    // This implements the same truthy concept as in Ruby.
+    // In this language, only nil and false are falsy. Everything else is truthy.
     private bool IsTruthy(object expr)
     {
         if (expr == null) return false;
@@ -138,18 +148,103 @@ public class Interpreter : Expr.IVisitor<object>
         return left.Equals(right);
     }
 
-    // we check that the types for the kind of operator is 
+    // Checks that the operand is a number for unary operators.
     private void CheckNumberOperant(Token operatr, object operand)
     {
         if (operand is double) return;
         throw new RuntimeError(operatr, "Operand must be a number");
     }
 
+    // Checks that both operands are numbers for binary operators that require numerical operands.
     private void CheckNumberOperands(Token operatr,
                                   Object left, Object right)
     {
         if (left is double && right is double) return;
 
         throw new RuntimeError(operatr, "Operands must be numbers.");
+    }
+
+    private void Execute(Stmt stmt)
+    {
+        stmt.Accept(this);
+    }
+
+    public object VisitExpressionStmt(Stmt.Expression stmt)
+    {
+        Evaluate(stmt.expression);
+
+        // This function should conceptually return void.
+        // However, because the visitor interface is generic, we cannot use void as the return type.
+        // Therefore, we use object and return null, treating this function as if it were void.
+        return null;
+    }
+
+    public object VisitPrintStmt(Stmt.Print stmt)
+    {
+        object value = Evaluate(stmt.Expression);
+
+        Console.WriteLine(Stringify(value));
+
+        // This function should conceptually return void.
+        // However, because the visitor interface is generic, we cannot use void as the return type.
+        // Therefore, we use object and return null, treating this function as if it were void.
+        return null;
+    }
+
+    public void ExecuteBlock(List<Stmt> statements, Environment environment)
+    {
+        Environment previous = _environment;
+        try
+        {
+            _environment = environment;
+            foreach (var stmt in statements)
+            {
+                Execute(stmt);
+            }
+        }
+        finally
+        {
+            _environment = previous;
+        }
+    }
+
+    public object VisitVarStmt(Stmt.Var stmt)
+    {
+        object value = null;
+
+        if (stmt.Initializer != null)
+        {
+            value = Evaluate(stmt.Initializer);
+        }
+
+        _environment.Define(stmt.Name.Lexeme, value);
+
+        // This function should conceptually return void.
+        // However, because the visitor interface is generic, we cannot use void as the return type.
+        // Therefore, we use object and return null, treating this function as if it were void.
+        return null;
+    }
+
+    public object VisitVariableExpr(Expr.Variable expr)
+    {
+        return _environment.Get(expr.Name);
+    }
+
+    public object VisitAssignExpr(Expr.Assign expr)
+    {
+        object value = Evaluate(expr.Value);
+        _environment.Assing(expr.Name, value);
+
+        return value; // the reason why we return this is because assing is an expression that can be nested inside other like print a = 2;
+    }
+
+    public object VisitBlockStmt(Stmt.Block stmt)
+    {
+        ExecuteBlock(stmt.Statements, new Environment(_environment)); // we pass the global enviroment to the block enviroment.
+
+        // This function should conceptually return void.
+        // However, because the visitor interface is generic, we cannot use void as the return type.
+        // Therefore, we use object and return null, treating this function as if it were void.
+        return null;
     }
 }

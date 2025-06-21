@@ -22,12 +22,21 @@ class Program
 
         DefineAst(outputDir, "Expr", new()
         {
+            "Assign   : Token Name, Expr Value",
             "Binary   : Expr Left, Token Operator, Expr Right",
             "Grouping : Expr Expression",
             "Literal  : Object Value",
-            "Unary    : Token Operator, Expr Right"
-        }
-        );
+            "Unary    : Token Operator, Expr Right",
+            "Variable : Token Name"
+        });
+
+        DefineAst(outputDir, "Stmt", new()
+        {
+            "Block : List<Stmt> Statements",
+            "Expression : Expr expression",
+            "Print      : Expr Expression",
+            "Var        : Token Name, Expr Initializer"
+        });
     }
 
     private static void DefineAst(string outputDir, string baseName, List<string> types) 
@@ -45,10 +54,10 @@ class Program
 
 
 
-        writer.WriteLine("abstract class " + baseName + "{");
+        writer.WriteLine("public abstract class " + baseName + "{");
         writer.WriteLine("    public abstract T Accept<T>(IVisitor<T> visitor);");
         writer.WriteLine();
-        DefineVisitor(writer, "Expr", types);
+        DefineVisitor(writer, baseName, types);
         writer.WriteLine();
 
         foreach(var type in types)

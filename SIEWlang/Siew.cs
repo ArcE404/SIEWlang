@@ -76,11 +76,12 @@ class Siew
         IEnumerable<Token> tokens = lexer.ScanTokens();
 
         Parser parser = new([.. tokens]);
-        Expr expression = parser.Parse();
+
+        List<Stmt> statements = parser.Parse();
 
         if(HadError) return;
 
-        Interpreter.Interpret(expression);
+        Interpreter.Interpret(statements);
     }
 
     public static void Error(int line, string message)

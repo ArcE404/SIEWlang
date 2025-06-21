@@ -14,22 +14,126 @@ public class Parser
         Tokens = tokens;
     }
 
-    public Expr Parse()
+    // program → statement* EOF ;
+    public List<Stmt> Parse()
+    {
+        List<Stmt> statements = new();
+        while (!IsAtEnd())
+        {
+            statements.Add(Declaration());
+        }
+        return statements;
+    }
+
+    // declaration -> varDecl | statement
+    private Stmt Declaration()
     {
         try
         {
-            return Expression();
+            if (Match(VAR)) return VarDeclaration();
+
+            return Statement();
         }
-        catch (ParseError error)
+        catch (ParseError e)
         {
+            Synchronize();
             return null;
         }
     }
 
-    // Expression -> Equality
+    private Stmt VarDeclaration()
+    {
+        Token name = Consume(IDENTIFIER, "Expect variable name.");
+
+        Expr? init = null;
+        if (Match(EQUAL)){
+            init = Expression();
+        }
+
+        Consume(SEMICOLON, "Expect ';' after value."); // we separates the expressions using semiclone, this is the reason of the semiclone.
+        return new Stmt.Var(name, init);
+    }
+
+    //statement → exprStmt | printStmt ;
+    private Stmt Statement()
+    {
+        if (Match(PRINT)) return PrintStatement();
+
+        if (Match(LEFT_BRACE)) return new Stmt.Block(Block());
+
+        return ExpressionStatement();
+    }
+
+    private List<Stmt> Block()
+    {
+        var statements = new List<Stmt>();
+
+        while (!Check(RIGHT_BRACE) && !IsAtEnd()) // the Check method do not consume the token, the IsAtEnd is to avoid infinite loops.
+        {
+            statements.Add(Declaration());
+        }
+
+        Consume(RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
+    }
+
+    private Stmt PrintStatement() 
+    {
+        // we consume the print token when we do the match in the statement method.
+        Expr value = Expression();
+
+        Consume(SEMICOLON, "Expect ';' after value."); // we separates the expressions using semiclone, this is the reason of the semiclone.
+        return new Stmt.Print(value);
+    }
+
+    private Stmt ExpressionStatement()
+    {
+        Expr expr = Expression();
+
+        Consume(SEMICOLON, "Expect ';' after value.");
+
+        return new Stmt.Expression(expr);
+    }
+
+    // Expression -> Assignment
     private Expr Expression()
     {
-        return Equality();
+        return Assignment();
+    }
+
+    // assigment -> IDENTIFIER "=" Assignment | Equality;
+
+    private Expr Assignment()
+    {
+        // Attempt to parse the left-hand side of an assignment. This may consume an identifier
+        // or any expression that could potentially be a valid assignment target (l-value).
+        Expr expr = Equality();
+
+        // Check if this is an assignment (e.g., using "="). At this point, we confirm
+        // that the left-hand side was indeed an l-value candidate.
+        if (Match(EQUAL))
+        {
+            Token equals = Previous();
+
+            // Recursively parse the right-hand side. Assignment is right-associative,
+            // so something like "a = b = c" should be interpreted as "a = (b = c)".
+            // We re-enter the same Assignment rule to check if there's another assignment
+            // on the right-hand side and handle it correctly.
+            Expr value = Assignment();
+
+            // Ensure the left-hand side is a valid assignment target (i.e., a variable).
+            if (expr is Expr.Variable)
+            {
+                Token name = ((Expr.Variable)expr).Name;
+                return new Expr.Assign(name, value);
+            }
+
+            // If not a variable, then it's an invalid assignment target.
+            Error(equals, "Invalid assignment target.");
+        }
+
+        // If no assignment was matched, return the original expression.
+        return expr;
     }
 
     // Equality -> Comparison (("!=" | "==") Comparison )*
@@ -106,7 +210,7 @@ public class Parser
         return Primary();
     }
 
-    //primary → NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+    //primary → NUMBER | STRING | "true" | "false" | "nil" | IDENTIFIER | "(" expression ")" ;
     private Expr Primary()
     {
         if (Match(FALSE)) return new Expr.Literal(false);
@@ -116,6 +220,11 @@ public class Parser
         if(Match(NUMBER, STRING))
         {
             return new Expr.Literal(Previous().Literal); // it is the previus one because Match consume the token
+        }
+
+        if (Match(IDENTIFIER))
+        {
+            return new Expr.Variable(Previous());
         }
 
         if (Match(LEFT_PAREN))

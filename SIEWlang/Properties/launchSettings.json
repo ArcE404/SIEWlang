@@ -6,10 +6,14 @@
     },
     "SIEWlang File": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\Users\\augus\\Desktop\\Patio\\Codigos\\SIEWlang\\SIEWlang\\itsAlive.sw"
+      "commandLineArgs": "C:\\Users\\augus\\Desktop\\Patio\\Codigos\\SIEWlang\\SIEWlang\\SIEWHelloWorld.sw"
     },
     "SIEWland REPL": {
       "commandName": "Project"
+    },
+    "Hello World File": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\augus\\Desktop\\Patio\\Codigos\\SIEWlang\\SIEWlang\\SIEWHelloWorld.sw"
     }
   }
 }
