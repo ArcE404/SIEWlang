@@ -1,7 +1,6 @@
 ﻿using SIEWlang.Core.Interpreter;
 using SIEWlang.Core.Lexer;
 using SIEWlang.Core.Parser;
-using System.Text;
 using SystemEnv = System.Environment;
 
 namespace SIEWlang;

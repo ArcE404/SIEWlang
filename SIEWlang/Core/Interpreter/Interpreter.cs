@@ -1,5 +1,4 @@
-﻿using System;
-using SIEWlang.Core.Lexer;
+﻿using SIEWlang.Core.Lexer;
 using SIEWlang.Core.Parser;
 using static SIEWlang.Core.Lexer.TokenType;
 
@@ -57,13 +56,21 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
                         return (double)left + (double)right;
                     }
 
-                    if (left is string && right is string)
+                    // this is how is shown in the tutorial
+/*                  if (left is string && right is string)
                     {
                         return (string)left + (string)right;
                     }
+*/
+
+                    // this is my implementation to allow string concatenation with string and other types
+                    if(left is string || right is string)
+                    {
+                        return Stringify(left) + Stringify(right);
+                    }
 
                     throw new RuntimeError(expr.Operator,
-                                "Operands must be two numbers or two strings.");
+                                "RunTimeError: Operands must be two numbers or two strings.");
                 }
             case SLASH:
                 CheckNumberOperands(expr.Operator, left, right);
@@ -152,7 +159,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
     private void CheckNumberOperant(Token operatr, object operand)
     {
         if (operand is double) return;
-        throw new RuntimeError(operatr, "Operand must be a number");
+        throw new RuntimeError(operatr, "RunTimeError: Operand must be a number");
     }
 
     // Checks that both operands are numbers for binary operators that require numerical operands.
@@ -161,7 +168,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
     {
         if (left is double && right is double) return;
 
-        throw new RuntimeError(operatr, "Operands must be numbers.");
+        throw new RuntimeError(operatr, "RunTimeError: Operands must be numbers.");
     }
 
     private void Execute(Stmt stmt)
@@ -241,6 +248,50 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
     public object VisitBlockStmt(Stmt.Block stmt)
     {
         ExecuteBlock(stmt.Statements, new Environment(_environment)); // we pass the global enviroment to the block enviroment.
+
+        // This function should conceptually return void.
+        // However, because the visitor interface is generic, we cannot use void as the return type.
+        // Therefore, we use object and return null, treating this function as if it were void.
+        return null;
+    }
+
+    public object VisitIfStmt(Stmt.If stmt)
+    {
+        if (IsTruthy(Evaluate(stmt.Condition)))
+        {
+            Execute(stmt.ThenBranch);
+        }else if (IsTruthy(stmt.ElseBranch))
+        {
+            Execute(stmt.ElseBranch);
+        }
+
+        // This function should conceptually return void.
+        // However, because the visitor interface is generic, we cannot use void as the return type.
+        // Therefore, we use object and return null, treating this function as if it were void.
+        return null;
+    }
+
+    public object VisitLogicalExpr(Expr.Logical expr)
+    {
+        object left = Evaluate(expr.Left);
+
+        if(expr.Operator.TokenType == OR)
+        {
+            if (IsTruthy(left)) return left; // if an or encounter a true value at first, dont do more.
+        } else
+        {
+            if(!IsTruthy(left)) return left; // if an and encounter a false value at fist, dont do more.
+        }
+
+        return Evaluate(expr.Right);
+    }
+
+    public object VisitWhileStmt(Stmt.While stmt)
+    {
+        while (IsTruthy(Evaluate(stmt.Condition)))
+        {
+            Execute(stmt.Body);
+        }
 
         // This function should conceptually return void.
         // However, because the visitor interface is generic, we cannot use void as the return type.

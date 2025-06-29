@@ -49,7 +49,7 @@ public class Environment
 
         if (enclosing is not null) return enclosing.Get(name);
 
-        throw new RuntimeError(name, $"Undefined variable {name.Lexeme}.");
+        throw new RuntimeError(name, $"RunTimeError: Undefined variable {name.Lexeme}.");
     }
 
     public void Assing(Token name, object value)
@@ -66,6 +66,6 @@ public class Environment
             return;
         }
 
-        throw new RuntimeError(name, $"Undefined variable '{name.Lexeme}'");
+        throw new RuntimeError(name, $"RunTimeError: Undefined variable '{name.Lexeme}'");
     }
 }

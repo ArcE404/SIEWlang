@@ -114,7 +114,7 @@ public class Lexer
                 }
                 else
                 {
-                    Siew.Error(Line, "Unexpected character.");
+                    Siew.Error(Line, "LexerError: Unexpected character.");
                 }
                 break;
             }
@@ -201,7 +201,7 @@ public class Lexer
         // If there are no " at the end, the while above will consume the entire file. Then must print an error. Clever.
         if (IsAtEnd())
         {
-            Siew.Error(Line, "Unterminated string");
+            Siew.Error(Line, "LexerError: Unterminated string");
             return;
         }
 
