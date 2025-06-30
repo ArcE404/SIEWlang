@@ -12,8 +12,10 @@ public abstract class Stmt{
     {
         R VisitBlockStmt(Block stmt);
         R VisitExpressionStmt(Expression stmt);
+        R VisitIfStmt(If stmt);
         R VisitPrintStmt(Print stmt);
         R VisitVarStmt(Var stmt);
+        R VisitWhileStmt(While stmt);
     }
 
    public class Block : Stmt
@@ -46,12 +48,33 @@ public abstract class Stmt{
         }
    }
 
+   public class If : Stmt
+   {
+        public Expr Condition { get; }
+        public Stmt ThenBranch { get; }
+        public Stmt? ElseBranch { get; }
+
+        public If(Expr Condition, Stmt ThenBranch, Stmt? ElseBranch)
+        {
+            this.Condition = Condition;
+            this.ThenBranch = ThenBranch;
+            this.ElseBranch = ElseBranch;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitIfStmt(this);
+        }
+   }
+
    public class Print : Stmt
    {
+        public Token PrintType { get; }
         public Expr Expression { get; }
 
-        public Print(Expr Expression)
+        public Print(Token PrintType, Expr Expression)
         {
+            this.PrintType = PrintType;
             this.Expression = Expression;
         }
 
@@ -75,6 +98,23 @@ public abstract class Stmt{
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitVarStmt(this);
+        }
+   }
+
+   public class While : Stmt
+   {
+        public Expr Condition { get; }
+        public Stmt Body { get; }
+
+        public While(Expr Condition, Stmt Body)
+        {
+            this.Condition = Condition;
+            this.Body = Body;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitWhileStmt(this);
         }
    }
 

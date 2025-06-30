@@ -26,6 +26,7 @@ class Program
             "Binary   : Expr Left, Token Operator, Expr Right",
             "Grouping : Expr Expression",
             "Literal  : Object Value",
+            "Logical  : Expr Left, Token Operator, Expr Right",
             "Unary    : Token Operator, Expr Right",
             "Variable : Token Name"
         });
@@ -34,8 +35,11 @@ class Program
         {
             "Block : List<Stmt> Statements",
             "Expression : Expr expression",
-            "Print      : Expr Expression",
-            "Var        : Token Name, Expr Initializer"
+            "If         : Expr Condition, Stmt ThenBranch," +
+                        " Stmt? ElseBranch",
+            "Print      : Token PrintType, Expr Expression",
+            "Var        : Token Name, Expr Initializer",
+            "While      : Expr Condition, Stmt Body"
         });
     }
 
