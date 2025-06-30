@@ -25,6 +25,96 @@ public class Parser
         return statements;
     }
 
+    private Stmt ForStatement()
+    {
+        Consume(LEFT_PAREN, "Expect '(' after 'for'.");
+        
+        // the for loop need an initializer 
+        Stmt? initializer;
+        if (Match(SEMICOLON))
+        {
+            initializer = null;
+        }else if (Match(VAR))
+        {
+            // it can be the variable
+            initializer = VarDeclaration();
+        }
+        else
+        {
+            // or it can be an expression
+            initializer = ExpressionStatement();
+        }
+
+        Expr? condition = null;
+        if (!Check(SEMICOLON))
+        {
+            condition = Expression();
+        }
+        Consume(SEMICOLON, "Expect ';' after loop condition.");
+
+        Expr? increment = null;
+        if (!Check(RIGHT_PAREN))
+        {
+            increment = Expression();
+        }
+
+        Consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        Stmt body = Statement();
+
+        // Time to desugar the `for` loop into a `while` loop.
+        // We do this transformation from the inside out, starting from the increment.
+
+        if (increment is not null)
+        {
+            // We wrap the original body inside a block,
+            // and append the increment expression to the end of it.
+            // This ensures the increment runs after each iteration.
+            body = new Stmt.Block(
+            [
+                body,                        // loop body
+                new Stmt.Expression(increment) // increment expression
+            ]);
+        }
+
+        // If no condition is provided, treat it as `true` (infinite loop).
+        condition ??= new Expr.Literal(true);
+
+        // Now, wrap the updated body into a `while` loop with the condition.
+        body = new Stmt.While(condition, body);
+
+        // If there's an initializer, it should run before the loop starts.
+        // So we create a block that runs the initializer once, and then enters the loop.
+        if (initializer is not null)
+        {
+            // This block also ensures that any variables declared in the initializer
+            // stay scoped to the loop only.
+            body = new Stmt.Block(
+            [
+                initializer,
+                body
+        ]);
+        }
+
+        // In the end, we’ve transformed:
+        //
+        //   for (var i = 0; i < 5; i = i + 1) {
+        //       doSomething();
+        //   }
+        //
+        // Into something like:
+        //
+        //   {
+        //       var i = 0;
+        //       while (i < 5) {
+        //           doSomething();
+        //           i = i + 1;
+        //       }
+        //   }
+
+        return body;
+    }
+
     private Token Advance()
     {
         if (!IsAtEnd()) Current++;
