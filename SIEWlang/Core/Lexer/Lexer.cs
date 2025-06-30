@@ -18,6 +18,7 @@ public class Lexer
         { "nil", NIL },
         { "or", OR },
         { "print", PRINT },
+        { "printl", PRINTL },
         { "return", RETURN },
         { "super", SUPER },
         { "this", THIS },

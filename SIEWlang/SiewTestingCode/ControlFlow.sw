@@ -1,8 +1,8 @@
-﻿var contador = 0;
+﻿var a = 0;
+var temp;
 
-while (contador < 5){
-	print "Hola numero: " + (contador + 1);
-	contador = contador + 1;
+for (var b = 1; a < 10000; b = temp + b) {
+  printl a;
+  temp = a;
+  a = b;
 }
-
-print "Con juegos de azar y mujerzuelas";

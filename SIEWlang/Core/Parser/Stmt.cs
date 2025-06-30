@@ -69,10 +69,12 @@ public abstract class Stmt{
 
    public class Print : Stmt
    {
+        public Token PrintType { get; }
         public Expr Expression { get; }
 
-        public Print(Expr Expression)
+        public Print(Token PrintType, Expr Expression)
         {
+            this.PrintType = PrintType;
             this.Expression = Expression;
         }
 

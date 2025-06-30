@@ -278,18 +278,20 @@ public class Parser
 
     private Stmt PrintStatement()
     {
+        Token printType = Previous();
         // we consume the print token when we do the match in the statement method.
         Expr value = Expression();
 
         Consume(SEMICOLON, "ParseError: Expect ';' after value."); // we separates the expressions using semiclone, this is the reason of the semiclone.
-        return new Stmt.Print(value);
+        return new Stmt.Print(printType, value);
     }
 
     //statement → exprStmt | printStmt ;
     private Stmt Statement()
     {
+        if (Match(FOR)) return ForStatement();
         if (Match(IF)) return IfStatement(); // we consume the if here
-        if (Match(PRINT)) return PrintStatement();
+        if (Match(PRINT, PRINTL)) return PrintStatement();
         if (Match(WHILE)) return WhileStatement();
 
         if (Match(LEFT_BRACE)) return new Stmt.Block(Block()); //  this is a block statament

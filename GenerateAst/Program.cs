@@ -37,7 +37,7 @@ class Program
             "Expression : Expr expression",
             "If         : Expr Condition, Stmt ThenBranch," +
                         " Stmt? ElseBranch",
-            "Print      : Expr Expression",
+            "Print      : Token PrintType, Expr Expression",
             "Var        : Token Name, Expr Initializer",
             "While      : Expr Condition, Stmt Body"
         });

@@ -190,7 +190,14 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
     {
         object value = Evaluate(stmt.Expression);
 
-        Console.WriteLine(Stringify(value));
+        if(stmt.PrintType.TokenType == PRINTL)
+        {
+            Console.WriteLine(Stringify(value));
+        }
+        else
+        {
+            Console.Write(Stringify(value));
+        }
 
         // This function should conceptually return void.
         // However, because the visitor interface is generic, we cannot use void as the return type.
