@@ -18,5 +18,7 @@ public enum TokenType
     AND, CLASS, ELSE, FALSE, FN, FOR, IF, NIL, OR,
     PRINT, PRINTL, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
 
+    BREAK,
+
     EOF
 }

@@ -14,6 +14,7 @@ public abstract class Stmt{
         R VisitExpressionStmt(Expression stmt);
         R VisitIfStmt(If stmt);
         R VisitPrintStmt(Print stmt);
+        R VisitBreakStmt(Break stmt);
         R VisitVarStmt(Var stmt);
         R VisitWhileStmt(While stmt);
     }
@@ -81,6 +82,21 @@ public abstract class Stmt{
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitPrintStmt(this);
+        }
+   }
+
+   public class Break : Stmt
+   {
+        public Token BreakToken { get; }
+
+        public Break(Token BreakToken)
+        {
+            this.BreakToken = BreakToken;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitBreakStmt(this);
         }
    }
 

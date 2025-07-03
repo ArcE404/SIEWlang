@@ -5,6 +5,7 @@ namespace SIEWlang.Core.Parser;
 
 public class Parser
 {
+    private Stack<bool> IsLoopBlock = new();
     private int Current = 0;
 
     private List<Token> Tokens;
@@ -60,7 +61,9 @@ public class Parser
 
         Consume(RIGHT_PAREN, "Expect ')' after for clauses.");
 
+        IsLoopBlock.Push(true);
         Stmt body = Statement();
+        IsLoopBlock.Pop();
 
         // Time to desugar the `for` loop into a `while` loop.
         // We do this transformation from the inside out, starting from the increment.
@@ -383,10 +386,23 @@ public class Parser
         if (Match(IF)) return IfStatement(); // we consume the if here
         if (Match(PRINT, PRINTL)) return PrintStatement();
         if (Match(WHILE)) return WhileStatement();
+        if(Match(BREAK)) return BreakStatement(); 
 
         if (Match(LEFT_BRACE)) return new Stmt.Block(Block()); //  this is a block statament
 
         return ExpressionStatement();
+    }
+    
+    private Stmt BreakStatement()
+    {
+        IsLoopBlock.TryPeek(out bool result);
+        if (!result)
+        {
+            throw Error(Peek(), "ParseError: break statement must be inside a loop body block.");
+        }
+
+        Consume(SEMICOLON, "ParseError: Expect ';' after break statement.");
+        return new Stmt.Break(Previous());
     }
 
     private void Synchronize()
@@ -462,7 +478,10 @@ public class Parser
         Consume(LEFT_PAREN, "ParseError: Expect '(' after the if.");
         Expr condition = Expression();
         Consume(RIGHT_PAREN, "ParseError: Expect ')' after the if condition");
+
+        IsLoopBlock.Push(true);
         Stmt body = Statement();
+        IsLoopBlock.Pop();
 
         return new Stmt.While(condition, body);
     }

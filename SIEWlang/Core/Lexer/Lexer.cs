@@ -19,6 +19,7 @@ public class Lexer
         { "or", OR },
         { "print", PRINT },
         { "printl", PRINTL },
+        { "break", BREAK },
         { "return", RETURN },
         { "super", SUPER },
         { "this", THIS },

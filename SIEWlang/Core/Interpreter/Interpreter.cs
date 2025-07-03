@@ -6,6 +6,7 @@ namespace SIEWlang.Core.Interpreter;
 
 public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
 {
+    private bool isBreak = false;
     private Environment _environment = new();
 
     // A list of statements is considered a program.
@@ -214,6 +215,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
             foreach (var stmt in statements)
             {
                 Execute(stmt);
+                if (isBreak) break;
             }
         }
         finally
@@ -225,7 +227,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
     public object VisitVarStmt(Stmt.Var stmt)
     {
         object value = null;
-
+        
         if (stmt.Initializer != null)
         {
             value = Evaluate(stmt.Initializer);
@@ -298,8 +300,20 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
         while (IsTruthy(Evaluate(stmt.Condition)))
         {
             Execute(stmt.Body);
+            if (isBreak) break;
         }
 
+        isBreak = false;
+
+        // This function should conceptually return void.
+        // However, because the visitor interface is generic, we cannot use void as the return type.
+        // Therefore, we use object and return null, treating this function as if it were void.
+        return null;
+    }
+
+    public object VisitBreakStmt(Stmt.Break stmt)
+    {
+        isBreak = true;
         // This function should conceptually return void.
         // However, because the visitor interface is generic, we cannot use void as the return type.
         // Therefore, we use object and return null, treating this function as if it were void.
