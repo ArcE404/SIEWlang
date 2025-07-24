@@ -21,6 +21,11 @@ internal class AstPrinter : IVisitor<string>
         return Parenthesize(expr.Operator.Lexeme, expr.Left, expr.Right); // this seems to be the reason why in js we can do somthing like 1 + "1"...
     }
 
+    public string VisitCallExpr(Call expr)
+    {
+        throw new NotImplementedException();
+    }
+
     public string VisitGroupingExpr(Grouping expr) 
     {
         return Parenthesize("group", expr.Expression);

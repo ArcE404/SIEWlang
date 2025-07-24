@@ -1,10 +1,12 @@
-﻿var largo = 5;
-
-for(var i = 0; i < largo; i = i + 1)
+﻿var global = "hola";
 {
-	for(var k = 0; k <= i; k = k + 1)
+	fn happy()
 	{
-		print "*";
+		printl global;
 	}
-	printl " ";
+
+	var global = "como";
+	printl global;
+
+	happy();
 }

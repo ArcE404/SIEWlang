@@ -57,6 +57,28 @@ public class Environment
          */
     }
 
+
+    public object? GetAt(string name, int number)
+    {
+        return Ancestor(number).values[name];
+    }
+
+    public Environment? Ancestor(int distance)
+    {
+        Environment tmpEnvironment = this;
+        for (int i = 0; i < distance; i++)
+        {
+            tmpEnvironment = tmpEnvironment.enclosing;
+        }
+
+        return tmpEnvironment;
+    }
+
+    public void AssingAt(int distance, Token name, Object value)
+    {
+        Ancestor(distance).values[name.Lexeme] = value;
+    }
+
     public object? Get(Token name)
     {
         if (values.TryGetValue(name.Lexeme, out var value)) return value;

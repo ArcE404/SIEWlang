@@ -54,7 +54,7 @@ public class Lexer
     {
         AddToken(tokenType, null);
     }
-
+      
     private void AddToken(TokenType tokenType, Object literal)
     {
         string text = SourceCode.Substring(Start, Current - Start); // clever, we use the start of the word and the current character evaluated

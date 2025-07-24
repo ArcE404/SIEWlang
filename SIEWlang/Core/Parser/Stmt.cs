@@ -12,8 +12,10 @@ public abstract class Stmt{
     {
         R VisitBlockStmt(Block stmt);
         R VisitExpressionStmt(Expression stmt);
+        R VisitFunctionStmt(Function stmt);
         R VisitIfStmt(If stmt);
         R VisitPrintStmt(Print stmt);
+        R VisitReturnStmt(Return stmt);
         R VisitVarStmt(Var stmt);
         R VisitWhileStmt(While stmt);
     }
@@ -45,6 +47,25 @@ public abstract class Stmt{
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitExpressionStmt(this);
+        }
+   }
+
+   public class Function : Stmt
+   {
+        public Token Name { get; }
+        public List<Token> Params { get; }
+        public List<Stmt> Body { get; }
+
+        public Function(Token Name, List<Token> Params, List<Stmt> Body)
+        {
+            this.Name = Name;
+            this.Params = Params;
+            this.Body = Body;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitFunctionStmt(this);
         }
    }
 
@@ -81,6 +102,23 @@ public abstract class Stmt{
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitPrintStmt(this);
+        }
+   }
+
+   public class Return : Stmt
+   {
+        public Token Keyword { get; }
+        public Expr? Value { get; }
+
+        public Return(Token Keyword, Expr? Value)
+        {
+            this.Keyword = Keyword;
+            this.Value = Value;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitReturnStmt(this);
         }
    }
 

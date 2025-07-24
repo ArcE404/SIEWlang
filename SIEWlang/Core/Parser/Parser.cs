@@ -214,6 +214,7 @@ public class Parser
     {
         try
         {
+            if (Match(FN)) return Function("function");
             if (Match(VAR)) return VarDeclaration();
 
             return Statement();
@@ -223,6 +224,33 @@ public class Parser
             Synchronize();
             return null;
         }
+    }
+
+    private Stmt Function(string kind)
+    {
+        Token name = Consume(IDENTIFIER, $"Expect {kind} name.");
+        Consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+
+        List<Token> parameters = [];
+        if (!Check(RIGHT_PAREN))
+        {
+            do
+            {
+                if (parameters.Count >= 255)
+                {
+                    Error(Peek(), "Can't have more than 255 parameters.");
+                }
+
+                // since consume returns the token, in this case the name, we can use it to return the name and if it is not a name we can send the error
+                parameters.Add(Consume(IDENTIFIER, "Expect parameter name.")); 
+            } while (Match(COMMA));
+        }
+
+        Consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+        Consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        List<Stmt> body = Block(); // the block functions assumes that the open { is already being matched.
+        return new Stmt.Function(name, parameters, body);
     }
 
     // Equality -> Comparison (("!=" | "==") Comparison )*
@@ -381,12 +409,27 @@ public class Parser
     {
         if (Match(FOR)) return ForStatement();
         if (Match(IF)) return IfStatement(); // we consume the if here
+        if (Match(RETURN)) return ReturnStatement(); 
         if (Match(PRINT, PRINTL)) return PrintStatement();
         if (Match(WHILE)) return WhileStatement();
 
         if (Match(LEFT_BRACE)) return new Stmt.Block(Block()); //  this is a block statament
 
         return ExpressionStatement();
+    }
+
+    private Stmt ReturnStatement()
+    {
+        Token keyword = Previous();
+        Expr? value = null;
+
+        if (!Check(SEMICOLON))
+        {
+            value = Expression();
+        }
+
+        Consume(SEMICOLON, "Expect ';' after return statement.");
+        return new Stmt.Return(keyword, value);
     }
 
     private void Synchronize()
@@ -439,7 +482,47 @@ public class Parser
             return new Expr.Unary(operatr, right);
         }
 
-        return Primary();
+        return Call();
+    }
+
+    // call → primary ( "(" arguments? ")" )* ;
+    private Expr Call()
+    {
+        Expr expr = Primary();
+
+        while (true) 
+        {
+            if(Match(LEFT_PAREN))
+            {
+                expr = FinishCall(expr);
+            }else
+            {
+                break;
+            }
+        }
+
+        return expr;
+    }
+
+    private Expr FinishCall(Expr callee)
+    {
+        List<Expr> arguments = [];
+
+        if (!Check(RIGHT_PAREN)) // we check because we need to consume the parentesis to check later
+        {
+            do
+            {
+                if(arguments.Count >= 255) 
+                {
+                    Error(Peek(), "Can't have more than 255 arguments.");
+                }
+                arguments.Add(Expression());
+            } while (Match(COMMA));
+        }
+
+        Token paren = Consume(RIGHT_PAREN, "Expect ')' after arguments.");
+
+        return new Expr.Call(callee, paren, arguments);
     }
 
     private Stmt VarDeclaration()
