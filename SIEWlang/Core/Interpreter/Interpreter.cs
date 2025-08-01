@@ -173,6 +173,20 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
         return function.Call(this, arguments);
     }
 
+    public object VisitClassStmt(Stmt.Class stmt)
+    {
+        _currentEnvironment.Define(stmt.Name.Lexeme, null); // we define it before
+
+        SiewClass klass = new SiewClass(stmt.Name.Lexeme); // so we can refer to the same class later inside the class
+
+        _currentEnvironment.Assing(stmt.Name, klass); // we assing the result after
+
+        // This function should conceptually return void.
+        // However, because the visitor interface is generic, we cannot use void as the return type.
+        // Therefore, we use object and return null, treating this function as if it were void.
+        return null;
+    }
+
     public object VisitExpressionStmt(Stmt.Expression stmt)
     {
         Evaluate(stmt.expression);

@@ -254,4 +254,12 @@ public class Resolver : Expr.IVisitor<object>, Stmt.IVisitor<object>
             }
         }
     }
+
+    public object VisitClassStmt(Stmt.Class stmt)
+    {
+        Declare(stmt.Name);
+        Define(stmt.Name);
+
+        return null;
+    }
 }
