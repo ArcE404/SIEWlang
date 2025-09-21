@@ -8,13 +8,22 @@ public class Resolver : Expr.IVisitor<object>, Stmt.IVisitor<object>
     private enum FunctionType
     {
         NONE,
-        FUNCTION
+        FUNCTION,
+        INITIALIZER,
+        METHOD
+    }
+
+    private enum ClassType
+    {
+        NONE,
+        CLASS
     }
 
     private readonly Interpreter.Interpreter Interpreter;
     private Stack<Dictionary<string, bool>> Scopes = new();
 
     private FunctionType CurrentFunction = FunctionType.NONE;
+    private ClassType CurrentClass = ClassType.NONE;
 
     public Resolver(Interpreter.Interpreter interpreter)
     {
@@ -150,8 +159,14 @@ public class Resolver : Expr.IVisitor<object>, Stmt.IVisitor<object>
             Siew.Error(stmt.Keyword, "Can't return from top-level code.");
         }
 
+
         if (stmt.Value != null)
         {
+            if (CurrentFunction == FunctionType.INITIALIZER)
+            {
+                Siew.Error(stmt.Keyword, "Can't return a value from an initializer.");
+            }
+
             Resolve(stmt.Value);
         }
 
@@ -255,10 +270,76 @@ public class Resolver : Expr.IVisitor<object>, Stmt.IVisitor<object>
         }
     }
 
+
     public object VisitClassStmt(Stmt.Class stmt)
     {
+        ClassType enclosingClass = CurrentClass;
+        CurrentClass = ClassType.CLASS;
+
         Declare(stmt.Name);
         Define(stmt.Name);
+
+        BeginScope();
+
+        /*
+         * In this implementation, `this` is modeled as a variable defined in the
+         * class-body scope that encloses all methods.
+         *
+         * Each method is a function and therefore has its own local scope. The
+         * method scope is a child of the class scope, so any reference to `this`
+         * inside a method resolves to the parent (class) scope.
+         *
+         * In other words, when we encounter the `this` keyword inside a method,
+         * resolution happens outside the method’s local environment—up in the
+         * class scope where `this` is defined.
+         *
+         * See the comment in the SiewInstance class for how this is wired at runtime.
+         */
+
+        Scopes.Peek()["this"] = true;
+
+        foreach (var method in stmt.Methods)
+        {
+            FunctionType declaration = FunctionType.METHOD;
+
+            if (method.Name.Lexeme.Equals("init"))
+            {
+                declaration = FunctionType.INITIALIZER;
+            }
+
+            ResolveFunction(method, declaration);
+        }
+
+        EndScope();
+
+        CurrentClass = enclosingClass;
+        return null;
+    }
+
+    public object VisitGetExpr(Expr.Get expr)
+    {
+        Resolve(expr.Object);
+
+        return null;
+    }
+
+    public object VisitSetExpr(Expr.Set expr)
+    {
+        Resolve(expr.Value);
+        Resolve(expr.Object);
+        return null;
+    }
+
+    public object VisitThisExpr(Expr.This expr)
+    {
+
+        if(CurrentClass is not ClassType.CLASS)
+        {
+            Siew.Error(expr.Keyword, "Can't use 'this' outside of a class method.");
+            return null;
+        }
+
+        ResolveLocal(expr, expr.Keyword);
 
         return null;
     }

@@ -13,6 +13,9 @@ public abstract class Expr{
         R VisitAssignExpr(Assign expr);
         R VisitBinaryExpr(Binary expr);
         R VisitCallExpr(Call expr);
+        R VisitGetExpr(Get expr);
+        R VisitSetExpr(Set expr);
+        R VisitThisExpr(This expr);
         R VisitGroupingExpr(Grouping expr);
         R VisitLiteralExpr(Literal expr);
         R VisitLogicalExpr(Logical expr);
@@ -72,6 +75,57 @@ public abstract class Expr{
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitCallExpr(this);
+        }
+   }
+
+   public class Get : Expr
+   {
+        public Expr Object { get; }
+        public Token Name { get; }
+
+        public Get(Expr Object, Token Name)
+        {
+            this.Object = Object;
+            this.Name = Name;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitGetExpr(this);
+        }
+   }
+
+   public class Set : Expr
+   {
+        public Expr Object { get; }
+        public Token Name { get; }
+        public Expr Value { get; }
+
+        public Set(Expr Object, Token Name, Expr Value)
+        {
+            this.Object = Object;
+            this.Name = Name;
+            this.Value = Value;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitSetExpr(this);
+        }
+   }
+
+   public class This : Expr
+   {
+        public Token Keyword { get; }
+
+        public This(Token Keyword)
+        {
+            this.Keyword = Keyword;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitThisExpr(this);
         }
    }
 

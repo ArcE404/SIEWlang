@@ -47,13 +47,36 @@ internal class Siew
 
     public void Start(string[] args)
     {
-        if (args.Length > 1)
+        if (args.Length > 2)
         {
-            Console.WriteLine("Usage: siew [script-file]");
+            Console.WriteLine("Usage: siew [script-file] [SIEW]");
             SystemEnv.Exit(65);
         }
         else if (args.Length == 1)
         {
+            RunFile(args[0]);
+        }
+        else if(args.Length == 2 && args[1] == "SIEW") {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(
+                @$"
+────────────────────────────────────────────────────
+SIEW — Sometimes It Even Works
+───────────────────────────────────────────────────-
+    Be like SIEW.
+    Don’t fear failure. Just fail faster.
+    Fail faster, learn faster.
+    You know nothing by default.
+    Just accept the chaos: embrace it. x
+    Sometimes It Even Works.
+
+Executing SIEW program: {args[0]}
+------------------------------------------------------
+
+
+"
+                );
+            Console.ForegroundColor = ConsoleColor.White;
             RunFile(args[0]);
         }
         else

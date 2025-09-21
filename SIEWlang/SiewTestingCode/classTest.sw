@@ -1,9 +1,7 @@
-﻿class DevonshireCream {
-  serveOn() {
-    return "Scones";
+﻿class Bacon {
+  eat() {
+    print "Crunch crunch crunch!";
   }
 }
 
-var ourClass = DevonshireCream();
-
-printl ourClass;
+Bacon().eat(); // Prints "Crunch crunch crunch!".

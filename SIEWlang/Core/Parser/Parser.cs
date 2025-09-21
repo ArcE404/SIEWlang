@@ -1,5 +1,6 @@
 ﻿using SIEWlang.Core.Lexer;
 using static SIEWlang.Core.Lexer.TokenType;
+using static SIEWlang.Core.Parser.Expr;
 
 namespace SIEWlang.Core.Parser;
 
@@ -137,11 +138,11 @@ public class Parser
 
     private Expr Assignment()
     {
-        // Attempt to parse the left-hand side of an assignment. This may consume an identifier
+        // Attempt to parse the left-hand side of an assignment. This may consume an identifier (an IDENTIFIER is an Expr.Variable in the way we handle it)
         // or any expression that could potentially be a valid assignment target (l-value).
         Expr expr = Or();
 
-        // Check if this is an assignment (e.g., using "="). At this point, we confirm
+        // Check if this is an assignment (e.g., using "="). At this point, we need confirm
         // that the left-hand side was indeed an l-value candidate.
         if (Match(EQUAL))
         {
@@ -150,7 +151,7 @@ public class Parser
             // Recursively parse the right-hand side. Assignment is right-associative,
             // so something like "a = b = c" should be interpreted as "a = (b = c)".
             // We re-enter the same Assignment rule to check if there's another assignment
-            // on the right-hand side and handle it correctly.
+            // on the right-hand side and hansdle it correctly.
             Expr value = Assignment();
 
             // Ensure the left-hand side is a valid assignment target (i.e., a variable).
@@ -158,6 +159,11 @@ public class Parser
             {
                 Token name = ((Expr.Variable)expr).Name;
                 return new Expr.Assign(name, value);
+            } 
+            else if (expr is Expr.Get) 
+            {
+                Expr.Get get = (Expr.Get)expr;
+                return new Expr.Set(get.Object, get.Name, value);
             }
 
             // If not a variable, then it's an invalid assignment target.
@@ -209,7 +215,7 @@ public class Parser
         throw Error(Peek(), errorMessage);
     }
 
-    // declaration -> varDecl | statement
+    // declaration -> varDecl | FnDecl | ClassDecl | statement
     private Stmt Declaration()
     {
         try
@@ -327,7 +333,7 @@ public class Parser
     {
         Consume(LEFT_PAREN, "ParseError: Expect '(' after the if.");
         Expr condition = Expression();
-        Consume(RIGHT_PAREN, "ParseError: Expect ')' after the if condition");
+        Consume(RIGHT_PAREN, "ParseError: Expect ')' after the if condition"); 
 
         Stmt thenBranch = Statement();
         Stmt? elseBranch = null;
@@ -407,6 +413,8 @@ public class Parser
             Consume(RIGHT_PAREN, "ParseError: Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
+
+        if (Match(THIS)) return new Expr.This(Previous());
 
         throw Error(Peek(), "ParseError: Expect expression.");
     }
@@ -502,7 +510,7 @@ public class Parser
         return Call();
     }
 
-    // call → primary ( "(" arguments? ")" )* ;
+    // call → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
     private Expr Call()
     {
         Expr expr = Primary();
@@ -512,7 +520,13 @@ public class Parser
             if(Match(LEFT_PAREN))
             {
                 expr = FinishCall(expr);
-            }else
+            }else if (Match(DOT))
+            {
+                Token name = Consume(IDENTIFIER, "Expect property name after '.'");
+
+                expr = new Expr.Get(expr, name);
+            }
+            else
             {
                 break;
             }

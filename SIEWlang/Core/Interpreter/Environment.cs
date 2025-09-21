@@ -51,7 +51,7 @@ public class Environment
          * var a = "some some";
          * print a; // prints: some some
          *
-         * This behavior is permitted in Scheme at the top level, and we adopt the same convention here.
+         * This behavior is permitted in Scheme at the top level (global variables) , and we adopt the same convention here.
          *
          * "When in doubt, do what Scheme does."
          */

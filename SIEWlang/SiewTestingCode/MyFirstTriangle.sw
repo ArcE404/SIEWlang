@@ -1,12 +1,12 @@
-﻿var global = "hola";
+﻿var global = "some";
+var global = "hola";
 {
 	fn happy()
 	{
 		printl global;
 	}
-
+		
 	var global = "como";
-	printl global;
 
 	happy();
 }

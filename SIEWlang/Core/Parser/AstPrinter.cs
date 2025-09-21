@@ -26,6 +26,11 @@ internal class AstPrinter : IVisitor<string>
         throw new NotImplementedException();
     }
 
+    public string VisitGetExpr(Get expr)
+    {
+        throw new NotImplementedException();
+    }
+
     public string VisitGroupingExpr(Grouping expr) 
     {
         return Parenthesize("group", expr.Expression);
@@ -39,6 +44,16 @@ internal class AstPrinter : IVisitor<string>
     }
 
     public string VisitLogicalExpr(Logical expr)
+    {
+        throw new NotImplementedException();
+    }
+
+    public string VisitSetExpr(Set expr)
+    {
+        throw new NotImplementedException();
+    }
+
+    public string VisitThisExpr(This expr)
     {
         throw new NotImplementedException();
     }

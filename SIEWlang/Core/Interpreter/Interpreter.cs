@@ -1,4 +1,5 @@
-﻿using SIEWlang.Core.Callable;
+﻿using System.Runtime.InteropServices.ObjectiveC;
+using SIEWlang.Core.Callable;
 using SIEWlang.Core.Lexer;
 using SIEWlang.Core.Parser;
 using static SIEWlang.Core.Lexer.TokenType;
@@ -115,7 +116,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
                                         }
                     */
 
-                    // this is my implementation to allow string concatenation with string and other types
+                    // this is my implementation to allow string concatenation with other types and bugs
                     if (left is string || right is string)
                     {
                         return Stringify(left) + Stringify(right);
@@ -177,7 +178,15 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
     {
         _currentEnvironment.Define(stmt.Name.Lexeme, null); // we define it before
 
-        SiewClass klass = new SiewClass(stmt.Name.Lexeme); // so we can refer to the same class later inside the class
+        // we internaly use the functions, so methods are functions at the end tho...
+        Dictionary<string, SiewFunction> methods = [];
+        foreach (var method in stmt.Methods)
+        {
+            SiewFunction function = new SiewFunction(method, _currentEnvironment, method.Name.Lexeme.Equals("init"));
+            methods[method.Name.Lexeme] = function;
+        }
+
+        SiewClass klass = new SiewClass(stmt.Name.Lexeme, methods); // so we can refer to the same class later inside the class
 
         _currentEnvironment.Assing(stmt.Name, klass); // we assing the result after
 
@@ -207,6 +216,35 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
         // However, because the visitor interface is generic, we cannot use void as the return type.
         // Therefore, we use object and return null, treating this function as if it were void.
         return null;
+    }
+
+    public object VisitGetExpr(Expr.Get expr)
+    {   
+        Object tobject = Evaluate(expr.Object);
+
+
+        /*
+         * Property access is allowed only on instances—this intentionally disallows
+         * static fields and static methods.
+         *
+         * Rationale:
+         * - In the current (or an enclosing) environment, there must already be a variable
+         *   bound before this code runs (e.g., declared via a `var` statement).
+         * - That variable’s initializer must evaluate to a class *instance* (typically by
+         *   calling a constructor). In other words, we expect something like:
+         *
+         *     var obj = SomeClass(...); // yields an instance
+         *     obj.property              // allowed here
+         *
+         * - Since we check here that the receiver is a `SiewInstance`, only instances can
+         *   have properties. There is no support for `SomeClass.property` (static get).
+        */
+        if (tobject is SiewInstance)
+        {
+            return ((SiewInstance)tobject).Get(expr.Name);
+        }
+
+        throw new RuntimeError(expr.Name, "Only instances have properties");
     }
 
     public object VisitGroupingExpr(Expr.Grouping expr)
@@ -281,6 +319,27 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
         }
 
         throw new Return(value);
+    }
+
+    public object VisitSetExpr(Expr.Set expr)
+    {
+        object obj = Evaluate(expr.Object);
+
+        if (obj is not SiewInstance)
+        {
+            throw new RuntimeError(expr.Name, "Only instances have fields.");
+        }
+
+        object value = Evaluate(expr.Value);
+
+        ((SiewInstance)obj).Set(expr.Name, value);
+
+        return value;
+    }
+
+    public object VisitThisExpr(Expr.This expr)
+    {
+        return LookUpVariable(expr.Keyword, expr);
     }
 
     // "Our interpreter performs a post-order traversal—
