@@ -1,12 +1,18 @@
 ﻿
 namespace SIEWlang.Core.Callable;
 
-public class SiewClass : ISiewCallable
+public class SiewClass : SiewInstance, ISiewCallable
 {
     public readonly string Name;
     public readonly Dictionary<string, SiewFunction> Methods; // the class store the behaviour, the methods
 
-    public SiewClass(string name, Dictionary<string, SiewFunction> methods)
+    public SiewClass(string name, Dictionary<string, SiewFunction> methods) : base(null)
+    {
+        Name = name;
+        Methods = methods;
+    }
+
+    public SiewClass(string name, Dictionary<string, SiewFunction> methods, SiewClass metaClass) : base(metaClass)
     {
         Name = name;
         Methods = methods;

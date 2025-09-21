@@ -38,7 +38,7 @@ class Program
         DefineAst(outputDir, "Stmt", new()
         {
             "Block : List<Stmt> Statements",
-            "Class      : Token Name, List<Stmt.Function> Methods",
+            "Class      : Token Name, List<Stmt.Function> Methods, List<Stmt.Function> StaticMethods",
             "Expression : Expr expression",
             "Function   : Token Name, List<Token> Params, List<Stmt> Body",
             "If         : Expr Condition, Stmt ThenBranch," +

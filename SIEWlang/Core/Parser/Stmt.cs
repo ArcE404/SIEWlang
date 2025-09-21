@@ -40,11 +40,13 @@ public abstract class Stmt{
    {
         public Token Name { get; }
         public List<Stmt.Function> Methods { get; }
+        public List<Stmt.Function> StaticMethods { get; }
 
-        public Class(Token Name, List<Stmt.Function> Methods)
+        public Class(Token Name, List<Stmt.Function> Methods, List<Stmt.Function> StaticMethods)
         {
             this.Name = Name;
             this.Methods = Methods;
+            this.StaticMethods = StaticMethods;
         }
 
         public override T Accept<T>(IVisitor<T> visitor)

@@ -239,14 +239,22 @@ public class Parser
         Consume(LEFT_BRACE, "Expect '{' before class body");
 
         List<Stmt.Function> methods = [];
+        List<Stmt.Function> staticMethods = [];
+
         while (!Check(RIGHT_BRACE) && !IsAtEnd())
         {
+            if (Match(CLASS))
+            {
+                staticMethods.Add(Function("static method"));
+                continue;
+            }
+
             methods.Add(Function("method"));
         }
 
         Consume(RIGHT_BRACE, "Expect '}' after class body.");
 
-        return new Stmt.Class(name, methods);
+        return new Stmt.Class(name, methods, staticMethods);
     }
 
     private Stmt.Function Function(string kind)

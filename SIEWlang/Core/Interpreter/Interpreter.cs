@@ -180,13 +180,23 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
 
         // we internaly use the functions, so methods are functions at the end tho...
         Dictionary<string, SiewFunction> methods = [];
+        Dictionary<string, SiewFunction> staticMethods = [];
         foreach (var method in stmt.Methods)
         {
             SiewFunction function = new SiewFunction(method, _currentEnvironment, method.Name.Lexeme.Equals("init"));
             methods[method.Name.Lexeme] = function;
         }
 
-        SiewClass klass = new SiewClass(stmt.Name.Lexeme, methods); // so we can refer to the same class later inside the class
+        foreach (var staticMethod in stmt.StaticMethods)
+        {
+            SiewFunction function = new SiewFunction(staticMethod, _currentEnvironment, isInitializer: false);
+            staticMethods[staticMethod.Name.Lexeme] = function;
+        }
+
+        SiewClass metaClass = new SiewClass(stmt.Name.Lexeme, staticMethods);
+
+        SiewClass klass = new SiewClass(stmt.Name.Lexeme, methods, metaClass); // so we can refer to the same class later inside the class
+
 
         _currentEnvironment.Assing(stmt.Name, klass); // we assing the result after
 

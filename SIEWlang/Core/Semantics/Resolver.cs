@@ -310,6 +310,13 @@ public class Resolver : Expr.IVisitor<object>, Stmt.IVisitor<object>
             ResolveFunction(method, declaration);
         }
 
+        foreach (var staticMethod in stmt.StaticMethods)
+        {
+            FunctionType declaration = FunctionType.METHOD;
+
+            ResolveFunction(staticMethod, declaration);
+        }
+
         EndScope();
 
         CurrentClass = enclosingClass;
@@ -335,7 +342,7 @@ public class Resolver : Expr.IVisitor<object>, Stmt.IVisitor<object>
 
         if(CurrentClass is not ClassType.CLASS)
         {
-            Siew.Error(expr.Keyword, "Can't use 'this' outside of a class method.");
+            Siew.Error(expr.Keyword, "Can't use 'this' outside of a class staticMethod.");
             return null;
         }
 
