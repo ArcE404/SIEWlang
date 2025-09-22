@@ -15,6 +15,7 @@ public abstract class Expr{
         R VisitCallExpr(Call expr);
         R VisitGetExpr(Get expr);
         R VisitSetExpr(Set expr);
+        R VisitSuperExpr(Super expr);
         R VisitThisExpr(This expr);
         R VisitGroupingExpr(Grouping expr);
         R VisitLiteralExpr(Literal expr);
@@ -111,6 +112,23 @@ public abstract class Expr{
         public override T Accept<T>(IVisitor<T> visitor)
         {
             return visitor.VisitSetExpr(this);
+        }
+   }
+
+   public class Super : Expr
+   {
+        public Token Keyword { get; }
+        public Token Method { get; }
+
+        public Super(Token Keyword, Token Method)
+        {
+            this.Keyword = Keyword;
+            this.Method = Method;
+        }
+
+        public override T Accept<T>(IVisitor<T> visitor)
+        {
+            return visitor.VisitSuperExpr(this);
         }
    }
 

@@ -4,7 +4,7 @@ namespace SIEWlang.Core.Interpreter;
 
 public class Environment
 {
-    private readonly Environment? enclosing;
+    public readonly Environment? enclosing;
 
     // Even though a variable is represented by a Token, we use the variable name (string) as the key instead of the Token itself.
     // This is because the IDENTIFIER Token corresponds to a specific location in the source code.

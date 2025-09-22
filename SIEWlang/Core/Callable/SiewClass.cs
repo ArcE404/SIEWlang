@@ -5,11 +5,12 @@ public class SiewClass : ISiewCallable
 {
     public readonly string Name;
     public readonly Dictionary<string, SiewFunction> Methods; // the class store the behaviour, the methods
-
-    public SiewClass(string name, Dictionary<string, SiewFunction> methods)
+    public readonly SiewClass? SuperClass;
+    public SiewClass(string name, Dictionary<string, SiewFunction> methods, SiewClass? supeclass)
     {
         Name = name;
         Methods = methods;
+        SuperClass = supeclass;
     }
 
     public int Arity()
@@ -41,7 +42,16 @@ public class SiewClass : ISiewCallable
 
     public SiewFunction? FindMethod(string name)
     {
-        return Methods.TryGetValue(name, out var value) ? value : null;
+        
+        if (Methods.TryGetValue(name, out var value))
+        {
+            return value;
+        } else if (SuperClass is not null)
+        {
+            return SuperClass.FindMethod(name);
+        }
+
+        return null;
     }
 
     public override string ToString()

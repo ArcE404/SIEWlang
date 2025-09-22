@@ -236,6 +236,15 @@ public class Parser
     private Stmt ClassDeclaration()
     {
         Token name = Consume(IDENTIFIER, "Expected class name.");
+
+        Expr.Variable superclass = null;
+
+        if (Match(LESS))
+        {
+            Consume(IDENTIFIER, "Expect superclass name.");
+            superclass = new Expr.Variable(Previous());
+        }
+
         Consume(LEFT_BRACE, "Expect '{' before class body");
 
         List<Stmt.Function> methods = [];
@@ -246,7 +255,7 @@ public class Parser
 
         Consume(RIGHT_BRACE, "Expect '}' after class body.");
 
-        return new Stmt.Class(name, methods);
+        return new Stmt.Class(name, methods, superclass);
     }
 
     private Stmt.Function Function(string kind)
@@ -415,6 +424,15 @@ public class Parser
         }
 
         if (Match(THIS)) return new Expr.This(Previous());
+        
+        if (Match(SUPER))
+        {
+            Token keyword = Previous();
+            Consume(DOT, "Expect '.' after 'super'");
+
+            Token method = Consume(IDENTIFIER, "Expect superclass method name.");
+            return new Expr.Super(keyword, method);
+        }
 
         throw Error(Peek(), "ParseError: Expect expression.");
     }

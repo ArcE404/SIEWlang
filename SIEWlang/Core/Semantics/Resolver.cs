@@ -16,7 +16,8 @@ public class Resolver : Expr.IVisitor<object>, Stmt.IVisitor<object>
     private enum ClassType
     {
         NONE,
-        CLASS
+        CLASS,
+        SUBCLASS
     }
 
     private readonly Interpreter.Interpreter Interpreter;
@@ -279,6 +280,21 @@ public class Resolver : Expr.IVisitor<object>, Stmt.IVisitor<object>
         Declare(stmt.Name);
         Define(stmt.Name);
 
+        if (stmt.Superclass is not null)
+        {
+            if (stmt.Name.Lexeme.Equals(stmt.Superclass.Name.Lexeme))
+            {
+                Siew.Error(stmt.Superclass.Name, "A class can't inherit from itself.");
+            }
+            else
+            {
+                CurrentClass = ClassType.SUBCLASS;
+                Resolve(stmt.Superclass);
+                BeginScope();
+                Scopes.Peek()["super"] = true;
+            }
+        }
+
         BeginScope();
 
         /*
@@ -311,6 +327,11 @@ public class Resolver : Expr.IVisitor<object>, Stmt.IVisitor<object>
         }
 
         EndScope();
+        
+        if (stmt.Superclass is not null)
+        {
+            EndScope();
+        }
 
         CurrentClass = enclosingClass;
         return null;
@@ -332,11 +353,28 @@ public class Resolver : Expr.IVisitor<object>, Stmt.IVisitor<object>
 
     public object VisitThisExpr(Expr.This expr)
     {
-
-        if(CurrentClass is not ClassType.CLASS)
+        if(CurrentClass is not ClassType.CLASS && CurrentClass is not ClassType.SUBCLASS)
         {
             Siew.Error(expr.Keyword, "Can't use 'this' outside of a class method.");
             return null;
+        }
+
+        ResolveLocal(expr, expr.Keyword);
+
+        return null;
+    }
+
+    public object VisitSuperExpr(Expr.Super expr)
+    {
+        if (CurrentClass is ClassType.NONE)
+        {
+            Siew.Error(expr.Keyword,
+                "Can't use 'super' outside of a class.");
+        }
+        else if (CurrentClass is not ClassType.SUBCLASS)
+        {
+            Siew.Error(expr.Keyword,
+                "Can't use 'super' in a class with no superclass.");
         }
 
         ResolveLocal(expr, expr.Keyword);

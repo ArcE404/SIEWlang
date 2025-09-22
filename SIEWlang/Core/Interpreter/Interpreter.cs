@@ -176,7 +176,23 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
 
     public object VisitClassStmt(Stmt.Class stmt)
     {
+        object superclass = null;
+        if (stmt.Superclass is not null)
+        {
+            superclass = Evaluate(stmt.Superclass);
+            if (superclass is not SiewClass) {
+                throw new RuntimeError(stmt.Superclass.Name,
+                    "Superclass must be a class.");
+            }
+        }
+
         _currentEnvironment.Define(stmt.Name.Lexeme, null); // we define it before
+
+        if (stmt.Superclass is not null)
+        {
+            _currentEnvironment = new Environment(_currentEnvironment);
+            _currentEnvironment.Define("super", superclass);
+        }
 
         // we internaly use the functions, so methods are functions at the end tho...
         Dictionary<string, SiewFunction> methods = [];
@@ -186,7 +202,12 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
             methods[method.Name.Lexeme] = function;
         }
 
-        SiewClass klass = new SiewClass(stmt.Name.Lexeme, methods); // so we can refer to the same class later inside the class
+        SiewClass klass = new(stmt.Name.Lexeme, methods, superclass as SiewClass); // so we can refer to the same class later inside the class
+
+        if (superclass is not null && _currentEnvironment.enclosing is not null)
+        {
+            _currentEnvironment = _currentEnvironment.enclosing;
+        }
 
         _currentEnvironment.Assing(stmt.Name, klass); // we assing the result after
 
@@ -335,6 +356,26 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<object>
         ((SiewInstance)obj).Set(expr.Name, value);
 
         return value;
+    }
+
+    public object VisitSuperExpr(Expr.Super expr)
+    {
+        int distance = _locals[expr];
+        
+        SiewClass? superclass = _currentEnvironment.GetAt("super", distance) as SiewClass;
+
+        // i dont like this... it seems that it can broke at any moment...
+        SiewInstance? obj = _currentEnvironment.GetAt("this", distance - 1) as SiewInstance;
+
+        SiewFunction? method = superclass?.FindMethod(expr.Method.Lexeme);
+
+        if (method is null)
+        {
+            throw new RuntimeError(expr.Method, $"Undefined property '{expr.Method.Lexeme}'.");
+        }
+
+        // the hope is the only one proving that obj is not null
+        return method.Bind(obj);
     }
 
     public object VisitThisExpr(Expr.This expr)
